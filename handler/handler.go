@@ -9,7 +9,7 @@ import (
 	"github.com/MuhammadSheraz535/Task/database"
 	log "github.com/MuhammadSheraz535/Task/logger"
 	"github.com/MuhammadSheraz535/Task/model"
-	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo"
 	"gorm.io/gorm"
 )
 
@@ -27,30 +27,32 @@ func EmployeeService() *Employee {
 }
 
 // user Signup
-func (s *Employee) RegisterEmployee(c *gin.Context) {
+func (s *Employee) RegisterEmployee(c echo.Context) {
 	log.Info("Initializing Register User handler function...")
 	// binding user
 	var user *model.Employee
 
-	if err := c.ShouldBindJSON(&user); err != nil {
+	if err := c.Bind(&user); err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, "error : Error in Binding")
 		return
+
 	}
 	err := user.Validate()
 	if err != nil {
 		errs, ok := controller.ErrValidationSlice(err)
 		if !ok {
 			log.Error(err.Error())
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			return
+
 		}
 
 		log.Error(err.Error())
 		if len(errs) > 1 {
-			c.JSON(http.StatusBadRequest, gin.H{"errors": errs})
+			c.JSON(http.StatusBadRequest, errs)
 		} else {
-			c.JSON(http.StatusBadRequest, gin.H{"error": errs[0]})
+			c.JSON(http.StatusBadRequest, errs[0])
 		}
 		return
 	}
@@ -58,23 +60,23 @@ func (s *Employee) RegisterEmployee(c *gin.Context) {
 	_, err = controller.RegisterEmployee(s.Db, *user)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"status": "success"})
+	c.JSON(http.StatusCreated, "status: success")
 }
 
 //Get all register users
 
-func (s *Employee) GetAllRegisterUsers(c *gin.Context) {
+func (s *Employee) GetAllRegisterUsers(c echo.Context) {
 	log.Info("Initializing Get All Register User handler function...")
 	var users []model.Employee
-	name := c.Query("name")
+	name := c.QueryParam("name")
 	user, err := controller.GetAllEmployees(s.Db, name, users)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -84,7 +86,7 @@ func (s *Employee) GetAllRegisterUsers(c *gin.Context) {
 
 // GET users by id
 
-func (s *Employee) GetEmployeeById(c *gin.Context) {
+func (s *Employee) GetEmployeeById(c echo.Context) {
 	log.Info("Initializing Get User by id handler function...")
 	var user model.Employee
 	id, _ := strconv.ParseUint(c.Param("id"), 0, 64)
@@ -94,12 +96,12 @@ func (s *Employee) GetEmployeeById(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Error("User record not found against the given id")
-			c.JSON(http.StatusNotFound, gin.H{"error": "record not found"})
+			c.JSON(http.StatusNotFound, "error: record not found")
 			return
 		}
 
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, users)
@@ -107,7 +109,7 @@ func (s *Employee) GetEmployeeById(c *gin.Context) {
 }
 
 // update user
-func (s *Employee) UpdateEmployee(c *gin.Context) {
+func (s *Employee) UpdateEmployee(c echo.Context) {
 	log.Info("Initializing UpdateRoles handler function...")
 	var user model.Employee
 	id, _ := strconv.ParseUint(c.Param("id"), 0, 64)
@@ -117,32 +119,32 @@ func (s *Employee) UpdateEmployee(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Error("User record not found against the given id")
-			c.JSON(http.StatusNotFound, gin.H{"error": "record not found"})
+			c.JSON(http.StatusNotFound, "error: record not found")
 			return
 		}
 
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
-	err = c.ShouldBindJSON(&users)
+	err = c.Bind(&users)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	err = controller.UpdateEmployee(s.Db, &users)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, users)
 }
 
 // Delete User
-func (s *Employee) DeleteRegisterEmployee(c *gin.Context) {
+func (s *Employee) DeleteRegisterEmployee(c echo.Context) {
 
 	log.Info("Initializing Delete User handler function...")
 
@@ -154,12 +156,12 @@ func (s *Employee) DeleteRegisterEmployee(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Error("User record not found against the given id")
-			c.JSON(http.StatusNotFound, gin.H{"error": "record not found"})
+			c.JSON(http.StatusNotFound, "record not found")
 			return
 		}
 
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 	var users model.Employee
@@ -168,10 +170,10 @@ func (s *Employee) DeleteRegisterEmployee(c *gin.Context) {
 	err = controller.DeleteRegisterEmployee(s.Db, users, user_id)
 	if err != nil {
 		log.Error(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.Status(http.StatusNoContent)
+	c.NoContent(http.StatusNoContent)
 
 }
