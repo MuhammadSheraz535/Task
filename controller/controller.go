@@ -3,8 +3,8 @@ package controller
 import (
 	"errors"
 
-	log "github.com/MuhammadSheraz535/Task/logger"
 	"github.com/MuhammadSheraz535/Task/model"
+	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"
 )
 
