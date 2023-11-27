@@ -8,7 +8,7 @@ import (
 	"github.com/MuhammadSheraz535/Task/controller"
 	"github.com/MuhammadSheraz535/Task/database"
 	"github.com/MuhammadSheraz535/Task/model"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"
 )
@@ -26,6 +26,14 @@ func EmployeeService() *Employee {
 	return &Employee{Db: db}
 }
 
+// Create user
+// @Summary  register user .
+// @Description Create User.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router / [Post]/user
 // user Signup
 func RegisterEmployee(c echo.Context) {
 	log.Info("Initializing Register User handler function...")
@@ -54,6 +62,14 @@ func RegisterEmployee(c echo.Context) {
 }
 
 //Get all register users
+// Get ALL user
+// @Summary GET all register user from server.
+// @Description Create User.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router / [Get]/user
 
 func GetAllRegisterUsers(c echo.Context) {
 	log.Info("Initializing Get All Register User handler function...")

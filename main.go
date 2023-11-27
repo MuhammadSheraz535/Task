@@ -68,14 +68,7 @@ func main() {
 		handler.RegisterEmployee(c)
 		return nil
 	})
-// GetAll godoc
-// @Summary GET all register user from server.
-// @Description Get All User.
-// @Tags root
-// @Accept */*
-// @Produce json
-// @Success 200 {object} map[string]interface{}
-// @Router / [Post]/user
+
 	api.GET("", func(c echo.Context) error {
 		handler.GetAllRegisterUsers(c)
 		return nil
