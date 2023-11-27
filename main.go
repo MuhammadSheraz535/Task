@@ -2,20 +2,21 @@ package main
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/MuhammadSheraz535/Task/database"
+	_ "github.com/MuhammadSheraz535/Task/docs"
 	"github.com/MuhammadSheraz535/Task/handler"
 	"github.com/go-playground/validator"
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
-	_ "github.com/swaggo/echo-swagger/example/docs"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
-// @title Echo Swagger Example API
+// @title Task Api
 // @version 1.0
-// @description This is a sample server server.
+// @description This is a Echo server.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support
@@ -25,9 +26,10 @@ import (
 // @license.name Apache 2.0
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host localhost:3000
-// @BasePath /
+// @host localhost:8000
+// @BasePath /api/v1
 // @schemes http
+
 type CustomValidator struct {
 	validator *validator.Validate
 }
@@ -48,38 +50,32 @@ func main() {
 	database.Connect()
 
 	e := echo.New()
-	// e.GET("/swagger/*", echoSwagger.WrapHandler)
-	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
-		Skipper: func(c echo.Context) bool {
-			if strings.Contains(c.Request().URL.Path, "swagger") {
-				return true
-			}
-			return false
-		},
-	}))
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	// Middleware
+
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 
 	// Set up the custom validator
 	e.Validator = &CustomValidator{validator: validator.New()}
 
-	api := e.Group("/api/v1")
-// HealthCheck godoc
-// @Summary Show the status of server.
-// @Description get the status of server.
-// @Tags root
-// @Accept */*
-// @Produce json
-// @Success 200 {object} map[string]interface{}
-// @Router / [get]
 
+
+	api := e.Group("/api/v1")
 	api.POST("/register", func(c echo.Context) error {
 		handler.RegisterEmployee(c)
 		return nil
 	})
-
+// GetAll godoc
+// @Summary GET all register user from server.
+// @Description Get All User.
+// @Tags root
+// @Accept */*
+// @Produce json
+// @Success 200 {object} map[string]interface{}
+// @Router / [Post]/user
 	api.GET("", func(c echo.Context) error {
 		handler.GetAllRegisterUsers(c)
 		return nil
@@ -97,6 +93,6 @@ func main() {
 		return nil
 	})
 
-	e.Logger.Fatal(e.Start(":8000"))
+	e.Logger.Fatal(e.Start(":8080"))
 
 }
